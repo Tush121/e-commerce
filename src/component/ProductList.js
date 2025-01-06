@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ProductItem from '../component/ProductItem';
 import ProductModal from '../component/ProductModal';
 import Filters from '../component/Filter';
-import { fetchProducts } from '../api/api'
+import { fetchProducts } from '../api/api';
 import LoadingIndicator from '../component/LoadingIndicator';
 import "./productList.css";
 
@@ -61,26 +61,20 @@ const ProductList = () => {
     }, [isScrolled]);
 
     useEffect(() => {
-        if (filters.category) {
-            const filteredProducts = allProducts.filter((product) => {
-                const isCategoryMatch = !filters.category || product.category === filters.category;
-                return isCategoryMatch;
-            });
-            if (filters.sort === 'price-asc') {
-                filteredProducts.sort((a, b) => a.price - b.price);
-            } else if (filters.sort === 'price-desc') {
-                filteredProducts.sort((a, b) => b.price - a.price);
-            }
-            setProducts(filteredProducts);
-        }
-    }, [filters]);
+        let filteredProducts = [...allProducts];
 
-    const handleScroll = (e) => {
-        const bottom = e.target.scrollHeight === e.target.scrollTop + e.target.clientHeight;
-        if (bottom && !loading) {
-            setPage((prevPage) => prevPage + 1);
+        if (filters.category) {
+            filteredProducts = filteredProducts.filter((product) => product.category === filters.category);
         }
-    };
+
+        if (filters.sort === 'price-asc') {
+            filteredProducts.sort((a, b) => a.price - b.price);
+        } else if (filters.sort === 'price-desc') {
+            filteredProducts.sort((a, b) => b.price - a.price);
+        }
+
+        setProducts(filteredProducts);
+    }, [filters, allProducts]);
 
     const handleFilterChange = (key, value) => {
         setFilters((prev) => ({ ...prev, [key]: value }));
@@ -101,8 +95,8 @@ const ProductList = () => {
     };
 
     return (
-        <div className="product-list" onScroll={handleScroll}>
-            {!loading && (<Filters onFilterChange={handleFilterChange} onSortChange={handleSortChange} />)}
+        <div className="product-list">
+            {!loading && <Filters onFilterChange={handleFilterChange} onSortChange={handleSortChange} />}
 
             {error && <div className="error-message">{error}</div>}
 
@@ -113,10 +107,10 @@ const ProductList = () => {
             </div>
 
             {loading && !error && <LoadingIndicator />}
+
             <ProductModal isOpen={isModalOpen} product={selectedProduct} onClose={closeModal} />
         </div>
     );
 };
 
 export default ProductList;
-
